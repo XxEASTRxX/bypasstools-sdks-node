@@ -88,7 +88,7 @@ class BypassTools {
             body: { url, refresh: options.refresh ?? false },
         });
         return {
-            resultUrl:   data.result,
+            resultUrl:   data.resultUrl || data.result,
             cached:      data.cached ?? false,
             processTime: data.processTime,
             requestId:   data.requestId,
@@ -119,7 +119,7 @@ class BypassTools {
         const data = await this._request('GET', `/bypass/getTaskResult/${taskId}`);
         return {
             status:    data.status,
-            resultUrl: data.result,
+            resultUrl: data.resultUrl || data.result,
             error:     data.error,
         };
     }
@@ -141,7 +141,7 @@ class BypassTools {
         while (Date.now() < deadline) {
             await this._sleep(interval);
             const result = await this.getTaskResult(taskId);
-            if (result.status === 'completed') return { resultUrl: result.resultUrl, taskId };
+            if (result.status === 'completed' || result.status === 'success') return { resultUrl: result.resultUrl, taskId };
             if (result.status === 'failed') throw new BypassToolsError(result.error || 'Task failed', 'TASK_FAILED');
         }
         throw new BypassToolsError('Task timed out waiting for result', 'TASK_TIMEOUT');
